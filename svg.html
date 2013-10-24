@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Animations in HTML5 using SVG animations</title>
+<style>
+body
+{
+	padding: 0;
+	margin: 0;
+}
+
+#container
+{
+	position: relative;	/* Relative pos. - just that we can place absolute divs in there */
+	width: 100%;		/* Yes this will get the whole page width */
+	height: 600px;		/* and 600px height */
+	overflow: hidden;	/* Really important */
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="raphael.js"></script>
+<script>
+$(document).ready(function() {
+	var radius = 60,		//Radius of the tyres
+		tyreDist = 15,		//Distance from the edges of the chassis to the edge of a tyre
+		carDist = 300,		//Distance from the top of the car to the top of the container
+		carHeight = 130,	//Height of the car
+		carWidth = 400,		//Width of the car
+		axisDist = 20,		//Distance from the bottom of the car to the center of the tyre
+		grassHeight = 130,	//Height of the grass
+		left = -400,		//Starting position (left side)
+		diff = 2000,		//Difference from final position to starting position (right side = 1600px in this case)
+		angle = 1800,		//Final angle in degrees
+		time = 10000,		//Time for the animation in ms
+		ease = 'linear';	//Easing mode for the animation
+	
+	//creates new SVG context
+	var paper = Raphael('container');
+	//creates the grass
+	var grass = paper	/* accesses the svg context */
+		.rect(0, paper.height - grassHeight, paper.width, grassHeight)	/* creates the grass rectangle */
+		.attr('fill', '90-#33CC00-#66FF22')								/* fills the rectangle with a (linear) gradient */
+		.attr('stroke-width', 0); 										/* no stroking for this rectangle */
+	//creates the chassis of the car
+	var chassis = paper	/* accesses the svg context */
+		.rect(left, carDist, carWidth, carHeight)	/* creates the rectangle for the chassis of the car */
+		.attr('fill', '#F90')						/* fills the rectangle */
+		.attr('stroke-width', 2)					/* sets the stroke width to 2 pixels */
+		.attr('stroke', '#F60');					/* and sets the stroke color */
+	//creates the left tyre of the car
+	var tyre1 = paper	/* accesses the svg context */
+		.circle(left + tyreDist + radius, carDist + carHeight + axisDist, radius)	/* creates a circle for the tyre */
+		.attr('fill', '#09F')														/* fills the circle */
+		.attr('stroke', '#30F');													/* and sets the stroke color */
+	//creates the horizontal line of this tyre
+	var tyre1_lh = paper	/* accesses the svg context */
+		.path([									/* creates a path (will be a (horizontal) line) */
+			'M',								/* move to origin of line */
+			left + tyreDist,					/* x */
+			',',
+			carDist + carHeight + axisDist,		/* y */
+			'L',								/* draw line till */
+			left + tyreDist + radius + radius,	/* x */
+			',',
+			carDist + carHeight + axisDist		/* y */
+			].join(''))
+		.attr('stroke', '#30F')
+		.attr('stroke-width', 1);
+	//creates the vertical line of this tyre
+	var tyre1_lv = paper	/* accesses the svg context */
+		.path([											/* creates a path (will be a (vertical) line) */
+			'M',										/* move to origin of line */
+			left + tyreDist + radius,					/* x */
+			',',
+			carDist + carHeight + axisDist - radius,	/* y */
+			'L',										/* draw line till */
+			left + tyreDist + radius,					/* x */
+			',',
+			carDist + carHeight + axisDist + radius		/* y */
+			].join(''))
+		.attr('stroke', '#30F')
+		.attr('stroke-width', 1);
+	//creates the right tyre of the car
+	var tyre2 = paper	/* accesses the svg context */
+		.circle(left + carWidth - tyreDist - radius, carDist + carHeight + axisDist, radius)
+		.attr('fill', '#09F')
+		.attr('stroke', '#30F');
+	//creates the horizontal line of this tyre
+	var tyre2_lh = paper	/* accesses the svg context */
+		.path([
+			'M',
+			left + carWidth - tyreDist,
+			',',
+			carDist + carHeight + axisDist,
+			'L',
+			left + carWidth - tyreDist - radius - radius,
+			',',
+			carDist + carHeight + axisDist
+			].join(''))
+		.attr('stroke', '#30F')
+		.attr('stroke-width', 1);
+	//creates the vertical line of this tyre
+	var tyre2_lv = paper	/* accesses the svg context */
+		.path([
+			'M',
+			left + carWidth - tyreDist - radius,
+			',',
+			carDist + carHeight + axisDist - radius,
+			'L',
+			left + carWidth - tyreDist - radius,
+			',',
+			carDist + carHeight + axisDist + radius
+			].join(''))
+		.attr('stroke', '#30F')
+		.attr('stroke-width', 1);
+	
+	//put all the stuff for the tyres in one array
+	var tyres = paper	/* accesses the svg context */
+		.set()			/* starts a new grouping */
+		.push(			/* adds elements to the group */
+			tyre1, tyre1_lh, tyre1_lv, tyre2, tyre2_lh, tyre2_lv
+		);
+	
+	//save the various kinds of animation endpoints (transform-tos)
+	var transformTo = [ 't' + diff + ',0', 'r' + angle ];
+	
+	//function for the animation loop (resets everything to origin and performs animation)
+	var animationLoop = function() {
+		chassis	/* accesses the chassis */
+			.attr('transform', '')	/* resets the transformation */
+			.animate({ transform : transformTo[0] }, time, ease, animationLoop);	/* starts the animation */
+		
+		tyres	/* accesses the (part of the) tyre */
+			.attr('transform', '')	/* resets the transformation */
+			.animate({ transform : transformTo.join('') }, time, ease);		/* starts the animation */
+	};
+	
+	//starts the animation
+	animationLoop();
+});
+</script>
+</head>
+<body>
+<div id="container">
+</div>
+<footer>
+Codeproject article published by Florian Rappl, 2012. This work is licensed under the CPL.
+</footer>
+</body>
+</html>
